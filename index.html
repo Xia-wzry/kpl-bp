@@ -111,7 +111,7 @@
     <!-- 顶部信息条 -->
     <div class="infobar">
       <span id="phaseTag" class="phase">准备开始</span>
-      <span id="stepDesc" class="desc">点击「下一步」开始演示</span>
+      <span id="stepDesc" class="desc">准备好沉浸式当教练了吗？</span>
       <span class="count"><span id="stepIdx">0</span> / 20</span>
       <div class="prog"><i id="progFill"></i></div>
     </div>
@@ -205,7 +205,7 @@ function render(){
   progFill.style.width=(idx/STEPS.length*100)+'%';
   if(idx===0){
     phaseTag.textContent='准备开始'; phaseTag.className='phase';
-    stepDesc.textContent='点击「下一步」开始演示';
+    stepDesc.textContent='准备好沉浸式当教练了吗？';
   }else{
     const s=STEPS[idx-1];
     phaseTag.textContent=s.phase;
