@@ -113,7 +113,7 @@
   }
   .pick .avatar{width:60px;height:60px;border-radius:12px;background:#dfe4ec;display:flex;align-items:center;justify-content:center;font-size:28px;opacity:.4;transition:all .35s;}
   .pick .bar{width:64px;height:7px;border-radius:4px;background:#d3d9e2;transition:all .35s;}
-  .pick .num{font-size:13px;font-weight:800;color:var(--muted);transition:color .35s;}
+  .pick .num{font-size:15px;font-weight:800;color:var(--muted);transition:color .35s;letter-spacing:1px;}
   .pick.blue.active{background:linear-gradient(180deg,#4a94ee,var(--blue-dark));border-color:#7fb6f5;box-shadow:0 0 22px rgba(31,111,214,.5);}
   .pick.red.active{background:linear-gradient(180deg,#e8556a,var(--red-dark));border-color:#f28c9a;box-shadow:0 0 22px rgba(209,38,59,.5);}
   .pick.active .avatar{opacity:1;background:rgba(255,255,255,.25);}
@@ -210,9 +210,12 @@ for(let i=1;i<=5;i++){
   banBlue.insertAdjacentHTML('beforeend',`<div class="ban blue" data-side="blue" data-type="ban" data-slot="${i}"><span class="ico">🚫</span></div>`);
   banRed.insertAdjacentHTML('beforeend',`<div class="ban red" data-side="red" data-type="ban" data-slot="${i}"><span class="ico">🚫</span></div>`);
 }
+// 分路名按物理位置：从最外侧到最中间 = 对抗路→打野→中路→发育路→游走
+// 蓝方 slot1..5 从左(外)到右(内)；红方 row-reverse，slot1..5 从右(外)到左(内)——两边对称一致
+const LANES=['对抗路','打野','中路','发育路','游走'];
 for(let i=1;i<=5;i++){
-  pickBlue.insertAdjacentHTML('beforeend',`<div class="pick blue" data-side="blue" data-type="pick" data-slot="${i}"><div class="avatar">⚔️</div><div class="bar"></div><div class="num">P${i}</div></div>`);
-  pickRed.insertAdjacentHTML('beforeend',`<div class="pick red" data-side="red" data-type="pick" data-slot="${i}"><div class="avatar">⚔️</div><div class="bar"></div><div class="num">P${i}</div></div>`);
+  pickBlue.insertAdjacentHTML('beforeend',`<div class="pick blue" data-side="blue" data-type="pick" data-slot="${i}"><div class="avatar">⚔️</div><div class="bar"></div><div class="num">${LANES[i-1]}</div></div>`);
+  pickRed.insertAdjacentHTML('beforeend',`<div class="pick red" data-side="red" data-type="pick" data-slot="${i}"><div class="avatar">⚔️</div><div class="bar"></div><div class="num">${LANES[i-1]}</div></div>`);
 }
 
 function cell(s){return document.querySelector(`.${s.type}[data-side="${s.side}"][data-slot="${s.slot}"]`);}
