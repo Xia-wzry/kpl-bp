@@ -24,6 +24,12 @@
     min-height:100vh;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     padding:32px 20px;
+    position:relative;
+  }
+  .brand-mark{
+    position:absolute;top:16px;left:20px;
+    font-size:13px;font-weight:600;letter-spacing:1px;
+    color:#b9c2cf;user-select:none;
   }
   .stage{width:100%;max-width:1200px;}
   .page-title{
@@ -128,6 +134,7 @@
 </style>
 </head>
 <body>
+  <div class="brand-mark">小王夏令营出品</div>
   <div class="stage">
     <h1 class="page-title"><span>教</span><span>练</span><span>模</span><span>拟</span><span>器</span></h1>
     <!-- 顶部信息条 -->
