@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPL BP 流程演示</title>
+<style>
+  :root{
+    --blue:#1f6fd6;
+    --blue-dark:#1257ad;
+    --red:#d1263b;
+    --red-dark:#a81a2c;
+    --dim:#eef1f5;
+    --dim-border:#dbe0e8;
+    --text:#2a2f3a;
+    --muted:#9aa3b2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#ffffff;
+    color:var(--text);
+    min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:32px 20px;
+  }
+  .stage{width:100%;max-width:1200px;}
+
+  /* ===== 顶部信息条（跳动）===== */
+  .infobar{
+    background:transparent;color:var(--text);border:1.5px solid #e2e7ee;border-radius:14px;
+    padding:16px 24px;margin-bottom:16px;
+    display:flex;align-items:center;justify-content:center;gap:16px;
+    text-align:center;flex-wrap:wrap;
+  }
+  .infobar .phase{
+    font-size:13px;font-weight:800;letter-spacing:1px;padding:4px 14px;border-radius:16px;background:#eef1f5;color:var(--muted);
+  }
+  .infobar .phase.blue{background:var(--blue);color:#fff;}
+  .infobar .phase.red{background:var(--red);color:#fff;}
+  .infobar .desc{font-size:19px;font-weight:900;color:var(--text);}
+  .infobar .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:1px;}
+  .infobar .prog{flex-basis:100%;height:5px;border-radius:3px;background:#eef1f5;overflow:hidden;margin-top:4px;}
+  .infobar .prog > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),#ffd15c,var(--red));transition:width .35s;}
+
+  /* ===== BP 版面 ===== */
+  .board{
+    background:#fbfcfe;border:1px solid #e7ebf1;border-radius:16px;
+    padding:20px 22px 24px;box-shadow:0 12px 40px rgba(30,60,120,.08);
+  }
+  .side-labels{display:grid;grid-template-columns:1fr 60px 1fr;margin-bottom:10px;font-weight:800;font-size:14px;}
+  .side-labels .l{color:var(--blue);}
+  .side-labels .r{color:var(--red);text-align:right;}
+  .side-labels .c{text-align:center;color:var(--muted);font-size:11px;letter-spacing:2px;align-self:center;}
+
+  /* ban行：小方块，靠内侧（贴近中线）排布 */
+  .ban-strip{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;gap:12px;margin-bottom:12px;}
+  .ban-row{display:flex;gap:5px;}
+  .ban-row.blue{justify-content:flex-start;}
+  .ban-row.red{justify-content:flex-start;flex-direction:row-reverse;}
+  .ban{
+    width:26px;height:26px;border-radius:5px;background:var(--dim);
+    border:1.5px solid var(--dim-border);
+    display:flex;align-items:center;justify-content:center;transition:all .35s ease;
+  }
+  .ban .ico{font-size:12px;opacity:.3;transition:all .35s;}
+  .ban.blue.active{background:linear-gradient(180deg,#4a94ee,var(--blue));border-color:#7fb6f5;box-shadow:0 0 14px rgba(31,111,214,.45);}
+  .ban.red.active{background:linear-gradient(180deg,#e8556a,var(--red));border-color:#f28c9a;box-shadow:0 0 14px rgba(209,38,59,.45);}
+  .ban.active .ico{opacity:1;filter:grayscale(1) brightness(3);}
+  .ban.done.blue{background:#cfe1f7;border-color:#a9c9ef;}
+  .ban.done.red{background:#f6d3d8;border-color:#ecaab3;}
+  .ban.done .ico{opacity:.55;}
+  .ban-center{text-align:center;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:1px;}
+
+  /* pick 行 */
+  .pick-strip{display:grid;grid-template-columns:1fr 60px 1fr;align-items:stretch;gap:12px;}
+  .picks{display:flex;gap:8px;}
+  .picks.red{flex-direction:row-reverse;}
+  .pick{
+    flex:1;height:118px;border-radius:9px;background:var(--dim);
+    border:1.5px solid var(--dim-border);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:all .35s ease;
+  }
+  .pick .avatar{width:40px;height:40px;border-radius:8px;background:#dfe4ec;display:flex;align-items:center;justify-content:center;font-size:19px;opacity:.4;transition:all .35s;}
+  .pick .bar{width:46px;height:5px;border-radius:3px;background:#d3d9e2;transition:all .35s;}
+  .pick .num{font-size:11px;font-weight:800;color:var(--muted);transition:color .35s;}
+  .pick.blue.active{background:linear-gradient(180deg,#4a94ee,var(--blue-dark));border-color:#7fb6f5;box-shadow:0 0 22px rgba(31,111,214,.5);}
+  .pick.red.active{background:linear-gradient(180deg,#e8556a,var(--red-dark));border-color:#f28c9a;box-shadow:0 0 22px rgba(209,38,59,.5);}
+  .pick.active .avatar{opacity:1;background:rgba(255,255,255,.25);}
+  .pick.active .bar{background:rgba(255,255,255,.9);width:58px;}
+  .pick.active .num{color:#fff;}
+  .pick.done.blue{background:#d3e2f8;border-color:#a9c9ef;}
+  .pick.done.red{background:#f7d5da;border-color:#ecaab3;}
+  .pick.done .avatar{opacity:.7;}
+  .pick-center{align-self:center;text-align:center;font-size:20px;font-weight:900;color:#c4ccd8;}
+
+  /* ===== 控制 ===== */
+  .controls{display:flex;gap:12px;justify-content:center;margin-top:22px;}
+  button{
+    font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;
+    border:1px solid #d8dee7;border-radius:10px;padding:10px 22px;color:var(--text);
+    background:#fff;transition:all .2s;
+  }
+  button:hover:not(:disabled){background:#f2f5f9;border-color:#c2cbd8;}
+  button:disabled{opacity:.4;cursor:not-allowed;}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <!-- 顶部信息条 -->
+    <div class="infobar">
+      <span id="phaseTag" class="phase">准备开始</span>
+      <span id="stepDesc" class="desc">点击「下一步」开始演示</span>
+      <span class="count"><span id="stepIdx">0</span> / 20</span>
+      <div class="prog"><i id="progFill"></i></div>
+    </div>
+
+    <!-- BP 版面 -->
+    <div class="board">
+      <div class="side-labels">
+        <div class="l">蓝色方</div>
+        <div class="c">VS</div>
+        <div class="r">红色方</div>
+      </div>
+
+      <!-- BAN -->
+      <div class="ban-strip">
+        <div class="ban-row blue" id="banBlue"></div>
+        <div class="ban-center"></div>
+        <div class="ban-row red" id="banRed"></div>
+      </div>
+
+      <!-- PICK -->
+      <div class="pick-strip">
+        <div class="picks" id="pickBlue"></div>
+        <div class="pick-center"></div>
+        <div class="picks red" id="pickRed"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="btnPrev">◀ 上一步</button>
+    <button id="btnNext">下一步 ▶</button>
+    <button id="btnReset">↺ 重置</button>
+  </div>
+
+<script>
+const STEPS = [
+  {type:'ban', side:'blue', slot:1, phase:'第一阶段 · 禁用', desc:'蓝方 Ban 第1 个'},
+  {type:'ban', side:'red',  slot:1, phase:'第一阶段 · 禁用', desc:'红方 Ban 第 1 个'},
+  {type:'ban', side:'blue', slot:2, phase:'第一阶段 · 禁用', desc:'蓝方 Ban 第 2 个'},
+  {type:'ban', side:'red',  slot:2, phase:'第一阶段 · 禁用', desc:'红方 Ban 第 2 个'},
+  {type:'pick', side:'blue', slot:1, phase:'第一阶段 · 选人', desc:'蓝方 Pick 第 1 手（先手）'},
+  {type:'pick', side:'red',  slot:1, phase:'第一阶段 · 选人', desc:'红方 Pick 第 1 手'},
+  {type:'pick', side:'red',  slot:2, phase:'第一阶段 · 选人', desc:'红方 Pick 第 2 手'},
+  {type:'pick', side:'blue', slot:2, phase:'第一阶段 · 选人', desc:'蓝方 Pick 第 2 手'},
+  {type:'pick', side:'blue', slot:3, phase:'第一阶段 · 选人', desc:'蓝方 Pick 第 3 手'},
+  {type:'pick', side:'red',  slot:3, phase:'第一阶段 · 选人', desc:'红方 Pick 第 3 手'},
+  {type:'ban', side:'red',  slot:3, phase:'第二阶段 · 禁用', desc:'红方 Ban 第 3 个（先手）'},
+  {type:'ban', side:'blue', slot:3, phase:'第二阶段 · 禁用', desc:'蓝方 Ban 第 3 个'},
+  {type:'ban', side:'red',  slot:4, phase:'第二阶段 · 禁用', desc:'红方 Ban 第 4 个'},
+  {type:'ban', side:'blue', slot:4, phase:'第二阶段 · 禁用', desc:'蓝方 Ban 第 4 个'},
+  {type:'ban', side:'red',  slot:5, phase:'第二阶段 · 禁用', desc:'红方 Ban 第 5 个'},
+  {type:'ban', side:'blue', slot:5, phase:'第二阶段 · 禁用', desc:'蓝方 Ban 第 5 个'},
+  {type:'pick', side:'red',  slot:4, phase:'第二阶段 · 选人', desc:'红方 Pick 第 4 手'},
+  {type:'pick', side:'blue', slot:4, phase:'第二阶段 · 选人', desc:'蓝方 Pick 第 4 手'},
+  {type:'pick', side:'blue', slot:5, phase:'第二阶段 · 选人', desc:'蓝方 Pick 第 5 手'},
+  {type:'pick', side:'red',  slot:5, phase:'第二阶段 · 选人', desc:'红方 Pick 第 5 手'},
+];
+
+const banBlue=document.getElementById('banBlue');
+const banRed=document.getElementById('banRed');
+const pickBlue=document.getElementById('pickBlue');
+const pickRed=document.getElementById('pickRed');
+
+for(let i=1;i<=5;i++){
+  banBlue.insertAdjacentHTML('beforeend',`<div class="ban blue" data-side="blue" data-type="ban" data-slot="${i}"><span class="ico">🚫</span></div>`);
+  banRed.insertAdjacentHTML('beforeend',`<div class="ban red" data-side="red" data-type="ban" data-slot="${i}"><span class="ico">🚫</span></div>`);
+}
+for(let i=1;i<=5;i++){
+  pickBlue.insertAdjacentHTML('beforeend',`<div class="pick blue" data-side="blue" data-type="pick" data-slot="${i}"><div class="avatar">⚔️</div><div class="bar"></div><div class="num">P${i}</div></div>`);
+  pickRed.insertAdjacentHTML('beforeend',`<div class="pick red" data-side="red" data-type="pick" data-slot="${i}"><div class="avatar">⚔️</div><div class="bar"></div><div class="num">P${i}</div></div>`);
+}
+
+function cell(s){return document.querySelector(`.${s.type}[data-side="${s.side}"][data-slot="${s.slot}"]`);}
+
+let idx=0;
+const phaseTag=document.getElementById('phaseTag');
+const stepDesc=document.getElementById('stepDesc');
+const stepIdx=document.getElementById('stepIdx');
+const progFill=document.getElementById('progFill');
+const btnPrev=document.getElementById('btnPrev');
+const btnNext=document.getElementById('btnNext');
+const btnReset=document.getElementById('btnReset');
+
+function render(){
+  document.querySelectorAll('.ban,.pick').forEach(el=>el.classList.remove('active','done'));
+  for(let i=0;i<idx;i++){
+    const c=cell(STEPS[i]); if(!c)continue;
+    c.classList.add(i===idx-1?'active':'done');
+  }
+  stepIdx.textContent=idx;
+  progFill.style.width=(idx/STEPS.length*100)+'%';
+  if(idx===0){
+    phaseTag.textContent='准备开始'; phaseTag.className='phase';
+    stepDesc.textContent='点击「下一步」开始演示';
+  }else{
+    const s=STEPS[idx-1];
+    phaseTag.textContent=s.phase;
+    phaseTag.className='phase '+s.side;
+    stepDesc.textContent=`${s.side==='blue'?'蓝方':'红方'} · ${s.desc.replace(/^(蓝方|红方)\s?/,'')}`;
+  }
+  btnPrev.disabled=idx===0;
+  btnNext.disabled=idx===STEPS.length;
+}
+
+btnNext.onclick=()=>{if(idx<STEPS.length){idx++;render();}};
+btnPrev.onclick=()=>{if(idx>0){idx--;render();}};
+btnReset.onclick=()=>{idx=0;render();};
+render();
+</script>
+</body>
+</html>
