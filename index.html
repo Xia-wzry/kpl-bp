@@ -28,22 +28,25 @@
   .stage{width:100%;max-width:1200px;}
   .page-title{
     text-align:center;
-    font-size:56px;
+    margin:0 0 48px;
+    line-height:1;
+    display:flex;justify-content:center;align-items:flex-end;gap:6px;
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  .page-title span{
+    display:inline-block;
+    font-size:72px;
     font-weight:900;
-    letter-spacing:10px;
-    margin:0 0 44px;
-    padding-left:10px;
-    line-height:1.1;
-    background:linear-gradient(100deg,#2b6cff 0%,#7a3bff 45%,#ff3b57 100%);
-    -webkit-background-clip:text;background-clip:text;
-    -webkit-text-fill-color:transparent;color:transparent;
-    position:relative;
+    color:#4bb6f5;
+    letter-spacing:0;
+    -webkit-text-stroke:2px #4bb6f5;
+    text-shadow:3px 3px 0 rgba(75,182,245,.25);
   }
-  .page-title::after{
-    content:"";display:block;width:72px;height:5px;border-radius:3px;
-    margin:18px auto 0;
-    background:linear-gradient(90deg,#2b6cff,#ff3b57);
-  }
+  .page-title span:nth-child(1){transform:rotate(-5deg);}
+  .page-title span:nth-child(2){transform:rotate(3deg) translateY(4px);}
+  .page-title span:nth-child(3){transform:rotate(-3deg) translateY(-3px);}
+  .page-title span:nth-child(4){transform:rotate(4deg) translateY(3px);}
+  .page-title span:nth-child(5){transform:rotate(-4deg);}
 
   /* ===== 顶部信息条（跳动）===== */
   .infobar{
@@ -126,7 +129,7 @@
 </head>
 <body>
   <div class="stage">
-    <h1 class="page-title">教练模拟器</h1>
+    <h1 class="page-title"><span>教</span><span>练</span><span>模</span><span>拟</span><span>器</span></h1>
     <!-- 顶部信息条 -->
     <div class="infobar">
       <span id="phaseTag" class="phase">准备开始</span>
