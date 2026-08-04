@@ -26,7 +26,24 @@
     padding:32px 20px;
   }
   .stage{width:100%;max-width:1200px;}
-  .page-title{text-align:center;font-size:28px;font-weight:900;letter-spacing:2px;color:#1b2233;margin-bottom:16px;}
+  .page-title{
+    text-align:center;
+    font-size:56px;
+    font-weight:900;
+    letter-spacing:10px;
+    margin:0 0 44px;
+    padding-left:10px;
+    line-height:1.1;
+    background:linear-gradient(100deg,#2b6cff 0%,#7a3bff 45%,#ff3b57 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    position:relative;
+  }
+  .page-title::after{
+    content:"";display:block;width:72px;height:5px;border-radius:3px;
+    margin:18px auto 0;
+    background:linear-gradient(90deg,#2b6cff,#ff3b57);
+  }
 
   /* ===== 顶部信息条（跳动）===== */
   .infobar{
